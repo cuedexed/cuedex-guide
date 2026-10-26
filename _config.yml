@@ -1,0 +1,14 @@
+title: CueDex
+description: The CueDex guide — a show timeline for the Mac that runs on music.
+theme: jekyll-theme-primer
+markdown: kramdown
+kramdown:
+  input: GFM
+  smart_quotes: ["apos", "apos", "quot", "quot"]
+plugins:
+  - jekyll-relative-links
+  - jekyll-redirect-from
+relative_links:
+  enabled: true
+exclude:
+  - LICENSE
