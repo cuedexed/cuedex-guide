@@ -42,7 +42,7 @@ timecode or OSC / MIDI.
 - [The CueDex guide](GUIDE.md): every feature, the shortcuts, troubleshooting, measured performance, privacy and
   licences.
 - [What's new](WHATS_NEW.md): the changes in each version.
-- [Sharing cues](CONTRIBUTING.md): how to add your cue sets to the public cue repository.
+- [Sharing cues](SHARING.md): how to add your cue sets to the public cue repository.
 
 > [!NOTE]
 > CueDex is built and tested on an M3 Mac with macOS 26. Windows and Linux are planned but not built yet.

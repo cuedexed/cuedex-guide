@@ -15,7 +15,7 @@ The newest version comes first. See [the guide](GUIDE.md) for how each feature w
 - Shared cues are aligned to your copy of the music by fingerprint and refined on your own audio (0.011 ms at the
   99th percentile).
 - The public cue repository on GitHub is CueDex's default source, and an offline bundle of it can be downloaded and
-  verified for venues without a network. See [Sharing cues](CONTRIBUTING.md).
+  verified for venues without a network. See [Sharing cues](SHARING.md).
 
 ### Steady numbers
 

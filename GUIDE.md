@@ -827,7 +827,7 @@ How it works, in short:
   lyrics** lets long cue names through the text check.
 
 What a shared set contains, and what is never stored, is under [Privacy](#privacy). To add your sets to the public
-repository, see [Sharing cues](CONTRIBUTING.md).
+repository, see [Sharing cues](SHARING.md).
 
 ## The Show window and the web remote
 
