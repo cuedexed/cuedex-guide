@@ -52,7 +52,8 @@ The music can come from three places:
 1. *CueDex's own player.* CueDex plays your files and makes the music and the LTC in the same audio callback, so
    they cannot drift apart. GO starts the music in the next audio buffer.
 2. *An app CueDex drives.* CueDex tells Spotify or Music what to play and starts its timeline on the first sound it
-   hears from that app; it can also follow TIDAL and any app that shows in macOS Now Playing.
+   hears from that app. It starts, pauses and places the track TIDAL holds, and it can follow any app that shows in
+   macOS Now Playing.
 3. *Any player, followed by ear.* CueDex listens to the audio (the whole Mac, one app, or an input), recognises the
    track and the position and follows it, including DJ tempo changes, hot cues and loops.
 
@@ -164,7 +165,7 @@ in the next audio buffer. **cueing…** (amber) means it is still decoding.
 
 1. **Add Tracks (Import Audio)…**
 2. **Add from Link…**
-3. **Add External Track (Spotify / Music / Now Playing)…**
+3. **Add External Track (Spotify / Music / TIDAL / Now Playing)…**
 4. **fps**
 5. **lead-in**
 6. **Peaks**: the waveform's state.
@@ -190,7 +191,7 @@ in the next audio buffer. **cueing…** (amber) means it is still decoding.
    CueDex refuses an artist page (a list of lists): paste one of its albums.
 3. **New Set from Link…** does the same into a new set: CueDex asks where the set's folder should go, writes the set
    when the first track is in, and saves it again when the list is done.
-4. **Add External Track (Spotify / Music / Now Playing)…** (<kbd>⇧⌘E</kbd>) adds a track that another app plays.
+4. **Add External Track (Spotify / Music / TIDAL / Now Playing)…** (<kbd>⇧⌘E</kbd>) adds a track that another app plays.
    See [External players](#external-players-spotify-music-tidal).
 
 ![Add from Link](img/link.png)
@@ -541,10 +542,8 @@ catalogue of your set, a cross-check only: it lags 100–250 ms and matches only
 ### Listener knobs
 
 These are the knobs under **Listener knobs**, with the defaults of this build. They are expert settings: the defaults
-come from the measurements, so leave them unless you have a reason. The descriptions are the app's own tooltips and
-use the engine's terms: *W votes* are landmark-pair matches, *P votes* are pitch-shift-proof triplet matches, a *line*
-is the position and rate being tracked, *STFT* is the spectrum analysis, *Engine A* is CueDex's tracker and *Engine B*
-ShazamKit, and a *sidecar* is the signature file next to the waveform cache.
+come from the measurements, so leave them unless you have a reason. The descriptions are the app's own tooltips (in
+the app each tooltip also ends with the default).
 
 <details>
 <summary>Every listener knob</summary>
@@ -552,74 +551,75 @@ ShazamKit, and a *sidecar* is the signature file next to the waveform cache.
 <!-- BEGIN GENERATED: listener-knobs -->
 | Knob | Default | Range | What it does |
 | --- | --- | --- | --- |
-| engines | A | A / B / A + B | A = CueDex's own landmark tracker (all platforms, primary); B = ShazamKit custom catalog (Apple, cross-check: measured ±5 % range and ~100–250 ms lag); both = A with B as cross-check |
-| B while A is lost | on | on / off | Combined policy: use ShazamKit's fixes while Engine A is Lost |
-| identification window | 4 s | 2.0 … 8.0 | seconds of audio voted over each step (measured: 4 s best; 2 s locked only 13 of 30 delayed test renders) |
-| step | 1 s | 0.25 … 2.0 | how often a window is evaluated |
-| first try after | 2 s | 1.0 … 8.0 | first identification after this much audio |
-| rate grid ± | 0.12 | 0.0 … 0.20 | vinyl/key-lock hypotheses span 1 ± this (default ±12 %: headroom past DJ ±8 %) |
-| rate grid step | 0.01 | 0.005 … 0.02 | spacing of the rate hypotheses |
-| key-lock search | on | on / off | also try tempo-without-pitch (master tempo) hypotheses (STFT frames every 128/r samples) |
-| f-shift range | 100 cents | 0.0 … 400.0 | P-hash vote: accepted pitch difference for 'agreement' |
-| accept: W votes with P | 6 | 3 … 40 | landmark votes in the offset peak needed when the P-hash vote agrees |
-| accept: W votes alone | 12 | 6 … 80 | landmark votes in the offset peak needed without P agreement |
-| keep the line: votes | 6 | 2 … 40 | votes on the current line that keep tracking it (less than identifying: the line is the prior; matters mid-crossfade) |
-| accept: P votes | 3 | 1 … 20 | P-hash votes for 'agreement' (the track must lead the P vote) |
-| noise margin | 2× | 1.0 … 5.0 | winner ≥ this × the third-best track's votes (false-lock guard; measured: 0 false locks over 5.8 h of non-catalog audio) |
-| hit span | 1 s | 0.0 … 4.0 | the offset peak's hits must spread over this much of the window (a burst of coincidences is not evidence) |
-| agreeing windows | 2 | 1 … 5 | windows that must agree before a Lock |
-| agree tolerance | 60 ms | 10.0 … 200.0 | how close two windows' positions must be to agree |
-| ambiguity | 0.8 | 0.3 … 1.0 | a second same-track offset with ≥ this share of the votes (a repeated section) blocks a Lock; 1.0 = off |
-| continuity | 0.5 | 0.0 … 1.0 | while tracking, the current line wins if it keeps ≥ this share (identical repeats can only be told apart by continuity) |
-| recent slice | 1.5 s | 0.5 … 4.0 | continuity and the fast jump judge this most recent part of the window (a jump shows there first) |
-| rate tie | 0.9 | 0.5 … 1.0 | hypotheses within this share of the best tie; the tie goes to the current rate |
-| jump threshold | 250 ms | 50.0 … 2000.0 | a fix this far from the line is a jump candidate |
-| jump confirmations | 2 | 1 … 5 | agreeing outliers that make a jump (immediate relock) |
-| lost after | 2 s | 0.5 … 10.0 | no accepted window for this long → the engine reports Lost (the transport takes the lost action at once) |
-| keep the line after lost | 8 s | 0.0 … 30.0 | after a Lost the line is kept this long so the jump watch can relock anywhere in the track (a loop, a scratch, a stop), then a fresh search |
-| stop: silence for | 0.5 s | 0.0 … 5.0 | this long below the stop level → Lost at once (a stopped deck); 0 = off |
-| stop level | -120 dBFS | -140.0 … -40.0 | a stopped player on a tap or a virtual device is digital silence; quiet breaks in masters reach −70…−80 dBFS (−104 through a 16-ch tap), so keep this at digital silence |
-| stop: not where the reference is silent | 0.25 | 0.0 … 1.0 | silence where the reference expects fewer than this share of its mean landmark rate is the music (a break), not a stop |
-| jump watch | on | on / off | while tracking: a sub-second watch on the current track for a hot cue / loop exit / restart (measured: relock ≈ 1.35 s median instead of 2.8 s) |
-| watch slice | 1 s | 0.5 … 2.0 | the newest this-many seconds of the current track's hits |
-| watch step | 0.25 s | 0.05 … 1.0 | how often the watch looks |
-| watch: min votes | 8 | 4 … 40 | votes the new offset needs in the slice |
-| watch: over the old line | 2× | 1.0 … 5.0 | the new offset needs this × the old line's votes where it is heard (and + 4) |
-| watch: min span | 0.25 s | 0.0 … 1.0 | the new offset's hits must spread over this long (not one burst) |
-| watch: repeat ratio | 0.8 | 0.3 … 1.0 | another offset with ≥ this share of the votes (a repeated bar) makes the slice ambiguous |
-| watch: envelope margin | 0.1 | 0.0 … 0.5 | the onset envelope since the new offset was first heard must follow it this much better than the old line and the repeated bar (0 = off) |
-| watch: envelope to jump at once | 0.6 | 0.0 … 1.0 | one step is enough when the new line's envelope correlation is ≥ this (0 = always the confirmations below) |
-| watch confirmations | 2 | 1 … 5 | agreeing steps with new hits that make a jump |
-| jump: sustained windows | 3 | 0 … 8 | this many agreeing identification windows jump even when the envelope cannot tell a repeated bar (0 = never) |
-| jump: min votes | 12 | 1 … 60 | a jump from the identification windows needs this many votes |
-| hold during loops | off | on / off | a repeated backward jump of the same length (a DJ loop) holds the line instead of jumping every loop |
-| loop max | 8 s | 0.5 … 30.0 | longest loop the hold applies to |
-| crossfade hand-over | early | early / score-cross / late | early: the incoming track takes over once accepted (its cues matter more); score-cross: when it out-scores; late: when the outgoing one is gone |
-| hand-over windows | 2 | 1 … 8 | windows the hand-over condition must hold |
-| hand-back hold-off | 4 s | 0.0 … 20.0 | after a hand-over, the outgoing track takes over again only if the incoming one has not been heard for this long (a fader pulled back) |
-| hand-over: repeat ratio | 0.8 | 0.3 … 1.0 | the incoming track's histogram must not have a second offset with ≥ this share (a repeated section 4 bars away) unless the chosen one continues its earlier line or wins the envelope |
-| hand-over: envelope margin | 0.1 | 0.0 … 0.5 | an ambiguous hand-over goes through when the chosen offset's envelope correlation beats the other one's by this |
-| hand-over: min votes | 12 | 1 … 60 | votes a hand-over needs |
-| hand-over: min score | 0 | 0.0 … 1.0 | score (votes / expected) a hand-over needs |
-| envelope refinement | on | on / off | fine fix by onset-envelope cross-correlation around the landmark offset |
-| envelope range ± | 16 ms | 2.0 … 100.0 | search range of the envelope correlation (up to ±100; periodic music picks a neighbouring subdivision there) |
-| σ landmark fix | 5 ms | 0.5 … 50.0 | position uncertainty given to the fusion for histogram fixes |
-| σ envelope fix | 3 ms | 0.5 … 50.0 | position uncertainty given to the fusion for envelope-refined fixes |
-| peaks / s | 30 | 10.0 … 80.0 | landmark density target (per-band quota); changing it needs a signature rebuild |
-| peak neighbourhood ±frames | 4 | 2 … 16 | peak picking time half-width (the literature uses 12; measured default 4); signature rebuild |
-| peak neighbourhood ±bins | 16 | 4 … 64 | peak picking frequency half-width (the literature uses 51; measured default 16); signature rebuild |
-| 5th band (5.5–8 kHz) | on | on / off | per-band quotas over 4 or 5 bands; signature rebuild |
-| clip gate level | 0.999 | 0.5 … 1.0 | \|sample\| at or above this counts as clipped |
-| clip gate share | 0.05 | 0.0 … 0.5 | more clipped samples than this share in a step → no fix from it |
-| silence below | -90 dBFS | -140.0 … -20.0 | no identification below this level (digital silence; identification itself is level-independent) |
-| Chase window | 8 s | 1.0 … 60.0 | seconds of fixes in the weighted least-squares line |
-| Chase lock fixes | 1 | 1 … 5 | fixes needed to lock the fusion (the engines already need 2 agreeing windows) |
-| freewheel | 2 s | 0.0 … 30.0 | after the fixes stop: keep running at the last rate this long, then the lost action |
-| no-fix → freewheel | 3 s | 0.5 … 10.0 | time since a fix was last DELIVERED before the fusion freewheels (an upper bound: the engine's own Lost acts at once; Engine A delivers one per step) |
-| then | stop LTC | stop LTC / keep running / hold the frame | what LTC / cues do when the freewheel time is over |
-| phase correction τ | 0.5 s | 0.1 … 5.0 | small errors are removed by a rate change over this time (LTC never jumps for them) |
-| max correction | 0.02 | 0.0 … 0.1 | largest rate change used for a phase correction |
-| resync beyond | 80 ms | 10.0 … 1000.0 | off the fused line by more than this → a seek (frame-aligned) |
+| engines | A | A / B / A + B | Which recogniser follows the music. A is CueDex's own: it is exact to a few milliseconds, follows tempo changes of ±12 % and is the clock. B is Apple's ShazamKit: it only recognises music within about ±5 % of the original speed and runs 100–250 ms late, so it is only a second opinion. A + B = A follows, B checks it. |
+| B while A is lost | on | on / off | With A + B: while A has lost the music, ShazamKit's positions keep the timeline going. Turn it off if you would rather have the timeline stop than run on ShazamKit's coarser positions. |
+| identification window | 4 s | 2.0 … 8.0 | How much of the most recent audio is compared with the set each time. Longer recognises more reliably in noisy or effects-heavy audio; shorter reacts faster. 4 s measured best; 2 s recognised only 13 of 30 delayed test recordings. |
+| step | 1 s | 0.25 … 2.0 | How often a new comparison is made. Shorter gives more position updates and uses more CPU. |
+| first try after | 2 s | 1.0 … 8.0 | How much audio to hear before the first attempt to recognise the track. |
+| speed range ± | 0.12 | 0.0 … 0.20 | How far from the original speed the music may be played and still be followed (0.12 = ±12 %, more than a DJ deck's ±8 %). Lower it if the music is never sped up: less CPU, and less chance of a wrong match. |
+| speed step | 0.01 | 0.005 … 0.02 | The steps in which speeds inside that range are tried (0.01 = 1 %). Smaller is finer and costs more CPU. |
+| key-lock search | on | on / off | Also look for music sped up without its pitch changing (a DJ's key-lock or master tempo). Turn it off if nobody uses key-lock: less CPU. |
+| pitch check tolerance | 100 cents | 0.0 … 400.0 | A second, pitch-independent check confirms a match; this is how far the pitch may differ for that check to count as agreeing (100 cents = one semitone). |
+| matches needed (pitch check agrees) | 6 | 3 … 40 | How many fingerprint matches recognise a track when the pitch-independent check agrees. Higher = fewer wrong recognitions but slower in difficult audio. |
+| matches needed (alone) | 12 | 6 … 80 | How many fingerprint matches recognise a track without the pitch-independent check agreeing. Higher = fewer wrong recognitions but slower in difficult audio. |
+| matches to keep following | 6 | 2 … 40 | How many matches keep CueDex following the position it already follows. Lower than recognising from scratch, so it holds on through a crossfade or a quiet passage. |
+| pitch check matches | 3 | 1 … 20 | How many pitch-independent matches the check needs to agree (the track must also lead that check). |
+| noise margin | 2× | 1.0 … 5.0 | The recognised track needs this many times the matches of the third-best track: a guard against recognising music that is not in the set (measured: no wrong recognition in 5.8 h of other music). Raise it if a track is recognised that is not playing. |
+| matches spread over | 1 s | 0.0 … 4.0 | The matches must come from at least this long a stretch of the audio heard, not from one burst (a burst can be chance). |
+| agreeing windows | 2 | 1 … 5 | How many comparisons in a row must agree on track and position before CueDex locks on. 1 locks faster but is easier to fool. |
+| agree tolerance | 60 ms | 10.0 … 200.0 | How close two comparisons' positions must be to count as agreeing. |
+| ambiguity | 0.8 | 0.3 … 1.0 | When a second place in the same track (a repeated chorus) gets at least this share of the matches (0.8 = 80 %), CueDex waits instead of locking on. 1.0 = never wait. |
+| continuity | 0.5 | 0.0 … 1.0 | While following, the current position wins as long as it keeps at least this share of the matches. Identical repeats can only be told apart this way: by where the music came from. |
+| recent slice | 1.5 s | 0.5 … 4.0 | The newest part of the audio that decides whether the music jumped (a hot cue or a loop shows there first). |
+| speed tie | 0.9 | 0.5 … 1.0 | Speeds that score within this share of the best (0.9 = 90 %) count as a tie, and a tie keeps the current speed, so the speed does not flicker. |
+| jump threshold | 250 ms | 50.0 … 2000.0 | A position this far from where the music should be is taken as a possible jump (a hot cue, a loop, a skip). |
+| jump confirmations | 2 | 1 … 5 | How many comparisons must agree on the new place before the timeline jumps there. 1 jumps sooner and is easier to fool. |
+| lost after | 2 s | 0.5 … 10.0 | With no recognition for this long, the listener reports the music lost, and the action under 'then' runs at once. |
+| remember the place after lost | 8 s | 0.0 … 30.0 | After the music is lost, CueDex keeps looking for it anywhere in the same track for this long (a loop, a scratch, a stop), then starts a fresh search of the whole set. |
+| stop: silence for | 0.5 s | 0.0 … 5.0 | Silence below the stop level for this long means the player stopped: the music is lost at once. 0 = off. |
+| stop level | -120 dBFS | -140.0 … -40.0 | What counts as silence for a stop. A stopped player on an app or a virtual device sends pure digital silence; quiet breaks in music reach −70 to −80 dBFS, so keep this far below them. Raise it only for a microphone or a noisy input. |
+| stop: not where the track is quiet | 0.25 | 0.0 … 1.0 | Silence where the track itself is nearly silent (under this share of its usual detail) is the music's own break, not a stop. |
+| jump watch | on | on / off | While following a track, a quick extra check on that same track for a hot cue, a loop exit or a restart (measured: relocks in about 1.35 s instead of 2.8 s). |
+| watch slice | 1 s | 0.5 … 2.0 | How much of the newest audio the jump watch looks at. |
+| watch step | 0.25 s | 0.05 … 1.0 | How often the jump watch looks. |
+| watch: min matches | 8 | 4 … 40 | Matches the new place needs before the jump watch believes it. |
+| watch: over the old place | 2× | 1.0 … 5.0 | The new place needs this many times the old place's matches (and at least 4 more). |
+| watch: min spread | 0.25 s | 0.0 … 1.0 | The new place's matches must come from at least this long a stretch of audio, not one burst. |
+| watch: repeat ratio | 0.8 | 0.3 … 1.0 | If another place gets at least this share of the matches (a repeated bar), the jump watch cannot tell them apart and waits. |
+| watch: rhythm margin | 0.1 | 0.0 … 0.5 | To jump, the loudness pattern of the music since the jump must fit the new place this much better than the old place and the repeated bar (0 = do not compare). |
+| watch: rhythm fit to jump at once | 0.6 | 0.0 … 1.0 | When the loudness pattern fits the new place at least this well (1 = perfectly), one look is enough to jump. 0 = always wait for the confirmations below. |
+| watch confirmations | 2 | 1 … 5 | How many looks in a row must find the new place before the jump watch jumps. |
+| jump: sustained windows | 3 | 0 … 8 | This many agreeing comparisons jump even when the loudness pattern cannot tell a repeated bar apart (0 = never). |
+| jump: min matches | 12 | 1 … 60 | Matches a jump found by the regular comparisons needs. |
+| hold during loops | off | on / off | A DJ loop jumps back by the same length again and again: hold the position instead of jumping on every pass. |
+| loop max | 8 s | 0.5 … 30.0 | The longest loop that 'hold during loops' applies to. |
+| crossfade hand-over | early | early / score-cross / late | When two tracks of the set are mixed, when the timeline moves to the incoming one: early = as soon as it is recognised (its cues usually matter more); score-cross = when it is heard more clearly than the outgoing one; late = when the outgoing one is gone. |
+| hand-over windows | 2 | 1 … 8 | How many comparisons in a row must agree before the hand-over. |
+| hand-back hold-off | 4 s | 0.0 … 20.0 | After a hand-over, the timeline goes back to the outgoing track only if the incoming one has not been heard for this long (the fader was pulled back). |
+| hand-over: repeat ratio | 0.8 | 0.3 … 1.0 | If a second place in the incoming track gets at least this share of the matches (a section repeated a few bars later), the hand-over waits — unless the chosen place continues where that track was heard before or its loudness pattern fits better. |
+| hand-over: rhythm margin | 0.1 | 0.0 … 0.5 | Such an uncertain hand-over goes ahead when the chosen place's loudness pattern fits this much better than the other place's. |
+| hand-over: min matches | 12 | 1 … 60 | Matches the incoming track needs for a hand-over. |
+| hand-over: min score | 0 | 0.0 … 1.0 | The incoming track's matches as a share of what a clean recording of it would give, needed for a hand-over (0 = no minimum). |
+| fine position | on | on / off | After a match, line the music's loudness pattern up with the track to get the position to a millisecond or two. Leave it on. |
+| fine position range ± | 16 ms | 2.0 … 100.0 | How far the fine position may move from the match. Wide ranges on very regular music can land one beat subdivision off. |
+| trust: match position | 5 ms | 0.5 … 50.0 | How uncertain a position from the matches alone is assumed to be. Smaller makes the timeline follow such positions more closely. |
+| trust: fine position | 3 ms | 0.5 … 50.0 | How uncertain a fine position is assumed to be. Smaller makes the timeline follow it more closely. |
+| pairs per landmark | 10 | 5 / 10 | How many partner points each point of the fingerprint is paired with when matching. 5 and 10 measured identical results. |
+| landmarks per second | 30 | 10.0 … 80.0 | How many points of the sound are kept per second in a track's fingerprint. More can help in noisy audio and makes bigger signature files. After a change, rebuild the signatures (the rebuild buttons in the Set view). |
+| landmark spacing in time | 4 | 2 … 16 | A point of the fingerprint must be the loudest within this many analysis steps (8 ms each) before and after it: smaller keeps more points close together. After a change, rebuild the signatures. |
+| landmark spacing in pitch | 16 | 4 … 64 | A point of the fingerprint must be the loudest within this many frequency steps (15.6 Hz each) above and below it: smaller keeps more points close together. After a change, rebuild the signatures. |
+| use 5.5–8 kHz too | on | on / off | Also take fingerprint points from the highest band (5.5–8 kHz), not only from below it. After a change, rebuild the signatures. |
+| clip gate level | 0.999 | 0.5 … 1.0 | A sample at or above this level (1 = full scale) counts as clipped (distorted). |
+| clip gate share | 0.05 | 0.0 … 0.5 | When more than this share of a step's samples is clipped, that step is not used: distortion makes false matches. |
+| silence below | -90 dBFS | -140.0 … -20.0 | No recognition is tried on audio quieter than this. Recognition itself does not depend on the volume. |
+| smoothing window | 8 s | 1.0 … 60.0 | The timeline follows a straight line through the positions of this many seconds. Longer is steadier; shorter follows speed changes sooner. |
+| positions to lock | 1 | 1 … 5 | How many positions start the timeline following (the listener has already checked each one twice). |
+| freewheel | 2 s | 0.0 … 30.0 | When positions stop coming (a quiet break, a scratch), the timeline runs on at the last speed for this long; then the action under 'then' runs. |
+| freewheel after no position for | 3 s | 0.5 … 10.0 | How long without a new position before the timeline freewheels. A stop the listener hears (silence) acts at once; this covers everything else. |
+| then | stop LTC | stop LTC / keep running / hold the frame | What timecode and cues do when the freewheel time is over. |
+| correction time | 0.5 s | 0.1 … 5.0 | A small drift is removed by running the timeline slightly faster or slower for about this long, so timecode never jumps for it. |
+| max correction | 0.02 | 0.0 … 0.1 | The largest speed change used for such a correction (0.02 = 2 %). |
+| resync beyond | 80 ms | 10.0 … 1000.0 | When the timeline is further than this from the music, it jumps (on a frame boundary) instead of correcting slowly. |
 <!-- END GENERATED: listener-knobs -->
 
 </details>
@@ -637,18 +637,34 @@ from that app, or follows when you press play in that app.
 | **Music.app** | AppleScript to Music | Measured start error at most 0.43 ms. |
 | **Spotify Web (SDK)** | Spotify's Web API and a Web Playback SDK page CueDex serves at `127.0.0.1:8137` | Needs your own Spotify developer app (Client ID) and Premium. The SDK starts about 71 ms early, a constant that CueDex subtracts by default. |
 | **Spotify Web → app** | The Web API commands the desktop app as a Spotify Connect device | About 24 ms early, a constant that CueDex subtracts by default. A cued GO waits on a server round trip, so it is not frame-exact. |
-| TIDAL | macOS Now Playing and MediaRemote | Play, pause and seek only; the free tier plays 30-second previews. The app has no button to add a TIDAL track to drive yet: add it with **Add what Now Playing shows** to follow it. |
+| **TIDAL** | Commands to the TIDAL app through macOS Now Playing (MediaRemote) | Play, pause and seek of the track TIDAL has loaded: no command can choose a track in TIDAL, so start it there once. Commands work while TIDAL is the Now Playing app. A free account plays 30-second previews. |
 | **Now Playing** | Any app that publishes macOS Now Playing | Follow only: you press play in that app. |
 
 ### Adding an external track
 
-**Add External Track (Spotify / Music / Now Playing)…** opens:
+**Add External Track (Spotify / Music / TIDAL / Now Playing)…** opens:
 
 ![Add External Track](img/external.png)
 
 - **Add what Spotify plays**, **Add what Music plays**, **Add what Now Playing shows**: play the track in that app
   first; CueDex reads its id, title, artist and duration.
+- **Add what TIDAL plays**: the same for TIDAL (title, artist and duration from macOS Now Playing; TIDAL reports no
+  track id).
 - A **Spotify link** with **Add (desktop app)**, **Add (Web API → SDK page)** or **Add (Web API → desktop app)**.
+- A **TIDAL link** (`https://tidal.com/track/…`) with **Add TIDAL link**: CueDex reads the title, artist and length
+  from TIDAL's public embed player (no login). If TIDAL is not playing that track, CueDex opens its page in TIDAL:
+  play it there once, then CueDex can pause, place and start it.
+
+#### TIDAL
+
+1. Open TIDAL and play the track once (so TIDAL is the Now Playing app and holds the track).
+2. **Add what TIDAL plays**, or paste its link and click **Add TIDAL link**.
+3. Press GO in CueDex. With **pre-cue external tracks** on, CueDex places the paused track at the GO position first; the
+   GO is then a resume (measured: the first sound 72 ms after the command, at the median).
+
+On a free TIDAL account every track is a 30-second preview, and the track's length in CueDex is the preview's when
+TIDAL plays it while you add it. At the end of a preview TIDAL moves on to its next track by itself. If another app
+(Spotify, Music) takes over macOS Now Playing, press play in TIDAL once to bring it back.
 
 ### Starting: onset, hybrid and cued GO
 
@@ -681,7 +697,7 @@ start a player has. With the default (**Default (per route)**), Music and the Sp
 and one LTC frame of pre-roll, and the other routes with onset.
 
 Measured with cued GO and Hybrid, the first readable LTC frame came within one frame of the sound in 49 of 50 GOs on
-Music, 47 of 50 on the Spotify app, 48 of 50 on the SDK page and 50 of 50 on TIDAL. The Spotify Connect route cannot
+Music, 47 of 50 on the Spotify app, 48 of 50 on the SDK page and 50 of 50 on TIDAL (each GO position against its own constant). The Spotify Connect route cannot
 do this (0 of 50): its resume goes through Spotify's servers.
 
 **follow the player (I press play there)**: the player's own play, seek, pause and track changes move the timeline.
@@ -827,7 +843,7 @@ How it works, in short:
   lyrics** lets long cue names through the text check.
 
 What a shared set contains, and what is never stored, is under [Privacy](#privacy). To add your sets to the public
-repository, see [Sharing cues](SHARING.md).
+repository, see [Sharing cues](CONTRIBUTING.md).
 
 ## The Show window and the web remote
 
@@ -941,7 +957,7 @@ edited, even if a button has focus.
 | Add Tracks (Import Audio)… | <kbd>⌘I</kbd> |
 | Add from Link… | <kbd>⇧⌘L</kbd> |
 | New Set from Link… | — |
-| Add External Track (Spotify / Music / Now Playing)… | <kbd>⇧⌘E</kbd> |
+| Add External Track (Spotify / Music / TIDAL / Now Playing)… | <kbd>⇧⌘E</kbd> |
 | Open the Demo Set | — |
 
 #### Edit menu
@@ -1148,7 +1164,7 @@ number.
 *Does CueDex need an audio interface?* No for cues, MTC, Art-Net and OTW: choose **none (no audio: model + outputs
 only)**. Yes for LTC to another device, or a virtual device for LTC to another program.
 
-*Can I use it without the music files?* Yes: drive Spotify or Music, follow TIDAL or any Now Playing app, or follow any
+*Can I use it without the music files?* Yes: drive Spotify, Music or TIDAL, follow any Now Playing app, or follow any
 player with the listener.
 
 *Which timing is the most exact?* The own player: LTC and music come out of the same audio callback.

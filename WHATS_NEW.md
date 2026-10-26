@@ -2,6 +2,16 @@
 
 The newest version comes first. See [the guide](GUIDE.md) for how each feature works.
 
+## 0.6.1
+
+- TIDAL tracks can be added to drive: **Add what TIDAL plays** and **Add TIDAL link** in **Add External Track (Spotify / Music / TIDAL / Now Playing)…**. A link
+  gives the title, artist and length without a login; a free account's 30-second preview is recognised as the same
+  track. See [TIDAL](GUIDE.md#tidal).
+- The listener's knobs explain themselves in plain words, and every tooltip ends with the knob's default. Some knobs
+  have clearer names: for example **matches needed (alone)**, **smoothing window** and **correction time**.
+- The guide's website shows notes, tips and warnings as coloured boxes, and its contents and tables inside
+  fold-out sections as links and tables, like on GitHub.
+
 ## 0.6.0
 
 ### Shared cues
@@ -15,7 +25,7 @@ The newest version comes first. See [the guide](GUIDE.md) for how each feature w
 - Shared cues are aligned to your copy of the music by fingerprint and refined on your own audio (0.011 ms at the
   99th percentile).
 - The public cue repository on GitHub is CueDex's default source, and an offline bundle of it can be downloaded and
-  verified for venues without a network. See [Sharing cues](SHARING.md).
+  verified for venues without a network. See [Sharing cues](CONTRIBUTING.md).
 
 ### Steady numbers
 

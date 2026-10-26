@@ -12,14 +12,14 @@ timecode or OSC / MIDI.
 | | How the music plays | Timing | Use it when |
 | --- | --- | --- | --- |
 | 1. Own player | CueDex plays your audio files (or tracks it fetched from a link) | Music and LTC come out of the same audio callback, sample-locked. GO starts in the next audio buffer. | You can bring the files. This is the most exact way. |
-| 2. Drive a player | CueDex starts Spotify or Music for you and follows them (and follows TIDAL or any Now Playing app) | The timeline starts on the player's first sound. The best routes land within one frame. | The music has to come from a streaming app. |
+| 2. Drive a player | CueDex starts Spotify, Music or TIDAL for you and follows them (and follows any Now Playing app) | The timeline starts on the player's first sound. The best routes land within one frame. | The music has to come from a streaming app. |
 | 3. Follow by ear | Another player plays: a DJ, a turntable, any app | CueDex listens, recognises the track and the position, and follows. Locks in about 3 s. | You don't control the player. |
 
 ## Your first show in six steps
 
 1. Open CueDex. The first launch opens the demo set. CueDex always starts with its cues off (**REHEARSE: cues off**): timecode runs, but no cue is sent yet.
 2. Build a set: choose **New Set**, then add tracks: drop audio files on the window, use **Add from Link…**, or
-   add a Spotify / Music track with **Add External Track (Spotify / Music / Now Playing)…**. Each track gets its own timecode hour.
+   add a Spotify, Music or TIDAL track with **Add External Track (Spotify / Music / TIDAL / Now Playing)…**. Each track gets its own timecode hour.
 3. Choose your outputs: in **Devices**, pick the audio device and switch on MTC, Art-Net or MIDI clock if you need
    them; set the LTC channel (**LTC ch**) in the Set view.
 4. Place cues: in **Timeline**, add a lane for each target, for example an OSC lane with the Resolume Arena
@@ -42,7 +42,7 @@ timecode or OSC / MIDI.
 - [The CueDex guide](GUIDE.md): every feature, the shortcuts, troubleshooting, measured performance, privacy and
   licences.
 - [What's new](WHATS_NEW.md): the changes in each version.
-- [Sharing cues](SHARING.md): how to add your cue sets to the public cue repository.
+- [Sharing cues](CONTRIBUTING.md): how to add your cue sets to the public cue repository.
 
 > [!NOTE]
 > CueDex is built and tested on an M3 Mac with macOS 26. Windows and Linux are planned but not built yet.
